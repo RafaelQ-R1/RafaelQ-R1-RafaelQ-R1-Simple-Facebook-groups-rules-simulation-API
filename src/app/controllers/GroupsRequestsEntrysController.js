@@ -57,14 +57,14 @@ class GroupRequestEntryController {
 
       return res.status(202).json({
         msg:
-          'your request is already sent. Await until an administrator of this group accept your request',
+          'your request is already sent. Wait until an administrator of this group accept your request',
         request: createRequestEntry.id,
         requester: createRequestEntry.requester_id,
         group: createRequestEntry.group_id,
       });
     }
 
-    const enterInGroup = await Group.addMember(user);
+    const enterInGroup = await group.addMember(user);
 
     return res.status(201).json(enterInGroup);
   }
@@ -122,6 +122,10 @@ class GroupRequestEntryController {
   async index(req, res) {
     const { group_id } = req.params;
 
+    const groupExists = await Group.findByPk(group_id);
+    if (!groupExists)
+      return res.status(400).json({ error: 'Group does not exists' });
+
     const isModerator = await Group.findOne({
       where: { id: group_id },
       include: {
@@ -139,8 +143,8 @@ class GroupRequestEntryController {
         .status(401)
         .json({ error: 'You are not allowed to do this action' });
 
-    const findAllRequests = await Group.find({
-      where: { group_id },
+    const findAllRequests = await Group.findAll({
+      where: { id: group_id },
       include: {
         association: 'requesters',
         required: true,
@@ -151,6 +155,7 @@ class GroupRequestEntryController {
       return res
         .status(400)
         .json({ error: "This group do not have requests entry's." });
+
     return res.json(findAllRequests);
   }
 

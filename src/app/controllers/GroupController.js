@@ -65,8 +65,6 @@ class GroupController {
 
     if (!groupExists) return res.status(400).json('group do not exists');
 
-    const includeStatement = [];
-
     const isMember = await Group.findOne({
       where: { id: group_id },
       include: {
@@ -75,6 +73,8 @@ class GroupController {
         required: true,
       },
     });
+
+    const includeStatement = [];
 
     if (!isMember && groupExists.is_private) {
       includeStatement.push(

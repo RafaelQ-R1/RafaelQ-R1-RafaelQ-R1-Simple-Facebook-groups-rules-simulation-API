@@ -79,6 +79,25 @@ class GroupMembersController {
 
   async index(req, res) {
     const { group_id } = req.params;
+
+    const groupExists = await Group.findByPk(group_id);
+    if (!groupExists)
+      return res.status(400).json({ error: 'Group does not exists' });
+
+    const isMember = await Group.findOne({
+      where: { id: group_id },
+      include: {
+        association: 'members',
+        where: { id: req.userId },
+        required: true,
+      },
+    });
+
+    if (!isMember && groupExists.is_private)
+      return res
+        .status(401)
+        .json({ error: 'Private group. Only a member can see the content' });
+
     const groupUsers = await Group.findByPk(group_id, {
       include: {
         association: 'members',
@@ -94,6 +113,25 @@ class GroupMembersController {
 
   async show(req, res) {
     const { group_id, user_id } = req.params;
+
+    const groupExists = await Group.findByPk(group_id);
+    if (!groupExists)
+      return res.status(400).json({ error: 'Group does not exists' });
+
+    const isMember = await Group.findOne({
+      where: { id: group_id },
+      include: {
+        association: 'members',
+        where: { id: req.userId },
+        required: true,
+      },
+    });
+
+    if (!isMember && groupExists.is_private)
+      return res
+        .status(401)
+        .json({ error: 'Private group. Only a member can see the content' });
+
     const groupUser = await Group.findByPk(group_id, {
       include: {
         association: 'members',

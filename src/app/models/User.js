@@ -33,7 +33,7 @@ class User extends Model {
 
     this.belongsToMany(models.Group, {
       foreignKey: 'requester_id',
-      through: "request_entry's",
+      through: 'request_entrys',
       as: 'requester',
     });
 

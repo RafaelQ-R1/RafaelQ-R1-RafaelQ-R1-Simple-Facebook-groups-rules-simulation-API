@@ -89,7 +89,8 @@ class GroupBansController {
       });
 
     await groupExists.removeMember(userExists);
-    const bannedMember = await groupExists.addBanned(userExists);
+
+    const bannedMember = await groupExists.addBan(userExists);
 
     return res.status(201).json(bannedMember);
   }
@@ -132,7 +133,7 @@ class GroupBansController {
   }
 
   async show(req, res) {
-    const { group_id, user_id } = req.param;
+    const { group_id, user_id } = req.params;
 
     const isAdministrator = await Group.findOne({
       where: { id: group_id, owner_id: req.userId },
@@ -140,12 +141,10 @@ class GroupBansController {
 
     const isModerator = await Group.findOne({
       where: { id: group_id },
-      include: [
-        {
-          association: 'moderators',
-          where: { id: req.userId },
-        },
-      ],
+      include: {
+        association: 'moderators',
+        where: { id: req.userId },
+      },
     });
 
     if (!isAdministrator && !isModerator)
@@ -154,17 +153,19 @@ class GroupBansController {
           ' Invalid action. Only the group admin or moderators can see this content',
       });
 
-    const findBanned = await Group.findByPk(group_id, {
+    const findBanned = await Group.findOne({
+      where: { id: group_id },
       include: {
         association: 'bans',
         where: { id: user_id },
         attributes: ['id', 'name', 'permitted_to_add_in_groups'],
         order: ['id'],
+        required: true,
       },
     });
 
     if (!findBanned)
-      return res.status(400).json({ error: 'Group does not exists' });
+      return res.status(400).json({ error: 'Ban register does not exists' });
 
     return res.status(200).json(findBanned);
   }
@@ -173,10 +174,12 @@ class GroupBansController {
     const { group_id, user_id } = req.params;
 
     const userExists = await User.findByPk(user_id);
-    if (!userExists) return res.status(400).json({ error: 'Group does ' });
+    if (!userExists)
+      return res.status(400).json({ error: 'User does not exists' });
 
     const groupExists = await Group.findByPk(group_id);
-    if (!groupExists) return res.status(400).json({ error: 'Group does ' });
+    if (!groupExists)
+      return res.status(400).json({ error: 'Group does not exists' });
 
     const isAdministrator = await Group.findOne({
       where: { id: group_id, owner_id: req.userId },
@@ -191,6 +194,13 @@ class GroupBansController {
         },
       ],
     });
+
+    const banExists = await Group.findByPk(group_id, {
+      include: { association: 'bans', where: { id: user_id } },
+    });
+
+    if (!banExists)
+      return res.status(400).json({ error: 'This user are not banned' });
 
     if (!isAdministrator && !isModerator)
       return res.status(401).json({
@@ -200,7 +210,7 @@ class GroupBansController {
 
     const userBanned = await groupExists.getBans({ where: { id: user_id } });
 
-    await groupExists.removeBanned(userBanned);
+    await groupExists.removeBan(userBanned);
 
     return res.status(200).json({
       msg: `The ban of user ${userExists.name} was successfully removed`,

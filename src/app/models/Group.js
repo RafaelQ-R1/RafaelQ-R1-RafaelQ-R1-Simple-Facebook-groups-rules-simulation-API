@@ -44,7 +44,7 @@ class Group extends Model {
 
     this.belongsToMany(models.User, {
       foreignKey: 'group_id',
-      through: "request_entry's",
+      through: 'request_entrys',
       as: 'requesters',
     });
   }

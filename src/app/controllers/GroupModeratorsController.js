@@ -6,12 +6,6 @@ class GroupModeratorsController {
   async create(req, res) {
     const { group_id, user_id } = req.params;
 
-    const group = await Group.findByPk(group_id);
-    if (!group) return res.status(400).json({ error: 'Group does not exists' });
-
-    const user = await User.findByPk(user_id);
-    if (!user) return res.status(400).json({ error: 'User does not exists' });
-
     const isOwner = await Group.findOne({
       where: { id: group_id, owner_id: req.userId },
     });
@@ -22,6 +16,12 @@ class GroupModeratorsController {
           'Invalid action. Only the administrator can promote members to moderators',
       });
 
+    const group = await Group.findByPk(group_id);
+    if (!group) return res.status(400).json({ error: 'Group does not exists' });
+
+    const user = await User.findByPk(user_id);
+    if (!user) return res.status(400).json({ error: 'User does not exists' });
+
     if (user_id === req.userId)
       return res.status(401).json({
         error: 'Invalid action. You cannot promote yourself to a moderator',
@@ -31,6 +31,7 @@ class GroupModeratorsController {
       where: { id: group_id },
       include: { association: 'members', where: { id: user_id } },
     });
+
     if (!isMember)
       return res.status(401).json({
         error:
