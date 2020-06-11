@@ -25,8 +25,8 @@ routes.use(authMiddleware);
 // users routes
 routes.get('/users', UserController.index);
 routes.get('/users/:user_id', UserController.show);
-routes.put('/users', UserController.update);
-routes.delete('/users,', UserController.delete);
+routes.put('/users/:user_id', UserController.update);
+routes.delete('/users/:user_id,', UserController.delete);
 
 // groups routes
 routes.post('/groups', GroupController.create);

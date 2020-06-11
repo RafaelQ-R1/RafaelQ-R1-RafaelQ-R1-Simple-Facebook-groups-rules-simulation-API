@@ -67,7 +67,16 @@ class GroupController {
 
     const includeStatement = [];
 
-    if (groupExists.is_private) {
+    const isMember = await Group.findOne({
+      where: { id: group_id },
+      include: {
+        association: 'members',
+        where: { id: req.userId },
+        required: true,
+      },
+    });
+
+    if (!isMember && groupExists.is_private) {
       includeStatement.push(
         {
           association: 'administrator',
@@ -139,7 +148,7 @@ class GroupController {
     });
 
     const isModerator = await Group.findOne({
-      where: { group_id },
+      where: { id: group_id },
       include: [
         {
           association: 'moderators',
@@ -171,12 +180,11 @@ class GroupController {
   async delete(req, res) {
     const { group_id } = req.params;
 
-    const groupExists = Group.findByPk(group_id);
-    if (!groupExists)
-      return res.status(400).json({ msg: 'group does not exists' });
+    const groupExists = await Group.findByPk(group_id);
+    if (!groupExists) return res.status(400).json('Group do not exists');
 
     const isOwner = await Group.findOne({
-      where: { group_id, owner_id: req.userId },
+      where: { id: group_id, owner_id: req.userId },
     });
 
     if (!isOwner)
@@ -184,7 +192,7 @@ class GroupController {
         error: 'Only the owner can delete the group',
       });
 
-    await Group.destroy(group_id);
+    await Group.destroy({ where: { id: group_id } });
 
     return res.status(200).json({ msg: 'group successfully deleted' });
   }

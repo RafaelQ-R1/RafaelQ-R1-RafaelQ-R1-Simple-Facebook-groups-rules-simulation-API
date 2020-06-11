@@ -32,6 +32,15 @@ class UserController {
   }
 
   async update(req, res) {
+    const { user_id } = req.params;
+
+    const findUser = await User.findOne({ where: { id: user_id } });
+
+    if (findUser.id !== req.userId)
+      return res
+        .status(401)
+        .json({ error: 'Invalid action. You are not this user' });
+
     const schema = Yup.object().shape({
       name: Yup.string(),
       email: Yup.string().email(),
@@ -68,12 +77,10 @@ class UserController {
       return res.status(401).json({ error: 'Password does not match' });
     }
 
-    const { id, name, permitted_to_add_in_groups } = await user.update(
-      req.body
-    );
+    const { name, permitted_to_add_in_groups } = await user.update(req.body);
 
     return res.json({
-      id,
+      msg: 'User successfully updated',
       name,
       email,
       permitted_to_add_in_groups,
@@ -110,6 +117,13 @@ class UserController {
   }
 
   async delete(req, res) {
+    const { user_id } = req.params;
+    const findUser = await User.findOne({ where: { id: user_id } });
+
+    if (findUser.id !== req.userId)
+      return res
+        .status(401)
+        .json({ error: 'Invalid action. You are not this user' });
     await User.destroy({
       where: { id: req.userId },
     });
