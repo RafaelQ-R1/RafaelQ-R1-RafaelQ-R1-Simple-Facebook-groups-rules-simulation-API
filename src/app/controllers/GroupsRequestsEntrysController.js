@@ -70,7 +70,7 @@ class GroupRequestEntryController {
   }
 
   async delete(req, res) {
-    const { group_id, user_Id } = req.params;
+    const { group_id, user_id } = req.params;
 
     const groupExists = await Group.findByPk(group_id);
 
@@ -81,7 +81,7 @@ class GroupRequestEntryController {
       where: { id: group_id },
       include: {
         association: 'requesters',
-        where: { id: user_Id },
+        where: { id: user_id },
         required: true,
       },
     });
@@ -107,14 +107,16 @@ class GroupRequestEntryController {
     });
 
     const isAdministrator = await Group.findOne({
-      where: { id: group_id, owner_id: req.userId },
+      where: { id: group_id },
     });
 
     if (!isRequester && !isModerator && !isAdministrator)
       return res.status(401).json({
-        invalid_request: `Only the the user ${requestExists.requester_id} or the Administrator and a Moderator of the group can do this action. `,
+        invalid_request: `Only the the requester or the Administrator and a Moderator of the group can do this action. `,
       });
-    await groupExists.removeRequest({ where: { id: user_Id } });
+
+    const user = await User.findByPk(user_id);
+    await groupExists.removeRequester(user);
 
     return res.status(200).json({ msg: 'Request successfully canceled.' });
   }
