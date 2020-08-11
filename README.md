@@ -12,7 +12,9 @@
   <li>
  List of members requesting to enter in the group;
  </li>
+  <li>
  Only moderators and administratos can ban a member from a group;
+  </li>
   <li>
  Groups associated to topics, topics to comments and groups, topics and coomments associated to an owner;
  </li>
