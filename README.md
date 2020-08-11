@@ -16,7 +16,7 @@
  Only moderators and administrators can ban a member from a group;
   </li>
   <li>
- Groups associated to topics, topics to comments and groups, topics and coomments associated to an owner;
+ Groups associated to topics, topics to comments and groups, topics and comments associated to an owner;
  </li>
  </ul>
  </br>
