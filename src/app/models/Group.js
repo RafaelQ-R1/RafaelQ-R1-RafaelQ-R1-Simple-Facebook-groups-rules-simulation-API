@@ -4,7 +4,7 @@ class Group extends Model {
   static init(sequelize) {
     super.init(
       {
-        name: Sequelize.INTEGER,
+        name: Sequelize.STRING,
         is_private: Sequelize.BOOLEAN,
       },
       {
